@@ -16,10 +16,28 @@ It will require some time since it will download all the three models.
 ---
 
 ## How to use it
+
+First of all, you need to create input and output directories:
+
+```bash
+# Once you are in the root directory of this project
+mkdir input && mkdir output
+```
+
+Then you can provide as input elmo.csv and bert.csv with the following structure:
+
+| Sentence                 | Word  |
+|--------------------------|-------|
+| "My input for the model" | input |
+
+Where *Word* represents our target within the *Sentence*.
+
+Finally with
+
 ```bash
 docker-compose run mycontainer
 ```
-The previous command will give you access to the bash within the container.<br>
+you will have access to the bash inside the container.<br>
 You can then execute each individual model, i.e.:
  
 ```bash
