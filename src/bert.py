@@ -5,10 +5,14 @@ import pandas as pd
 
 BERT_MODEL_PATH = './models/bert'
 BERT_INPUT_FILE = './input/bert.csv'
-PARAGRAPH = 'Paragraph'
+SENTENCE = 'Sentence'
 WORD = 'Word'
 TOKENIZED = 'Tokenized'
+ID = 'Id'
 MARKED = 'Marked'
+SEGMENT = 'Segment'
+TENSOR = 'Token_Tensor'
+SGM_TENSOR = 'Segment_Tensor'
 
 def getTokenizer():
     return BertTokenizer.from_pretrained(BERT_MODEL_PATH)
@@ -46,30 +50,22 @@ def markText(text):
 
 def readInput():
     data = pd.read_csv(BERT_INPUT_FILE)
-    data[MARKED] = data[PARAGRAPH].apply(markText)
+    data[MARKED] = data[SENTENCE].apply(markText)
     return data
 
+def getLabels(words, target):
+    labels = []
+    length = len(words)
+    for index in range(length):
+        print(words[index], target)
+        if words[index] == target:
+            start = max(0, index - 1)
+            end = min(length - 1, index + 1)
+            label = words[start] + ' ' + target.upper() + ' ' + words[end]
+            labels.append(label)
+    return labels
 
-def main():
-    input = readInput()
-
-    relevant_word = input[WORD].values[0]
-    text = input[PARAGRAPH].values[0]
-    marked_text = markText(text)
-
-    tokenizer = getTokenizer()
-    model = getBERTModel()
-
-    tokenized_text = tokenizer.tokenize(marked_text)
-    # Map the token strings to their vocabulary indeces.
-    indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
-    # Mark each of the tokens as belonging to sentence "1".
-    segments_ids = [1] * len(tokenized_text)
-
-    
-    tokens_tensor = toPyTorch(indexed_tokens)
-    segments_tensors = toPyTorch(segments_ids)
-
+def iteration(model, tokens_tensor, segments_tensors, tokenized_text, text, target, plot_id):
     with torch.no_grad():
         #outputs.hidden_states[layer][sentence][word]
         outputs = model(tokens_tensor, segments_tensors)
@@ -80,17 +76,37 @@ def main():
     token_embeddings = refactor(token_embeddings)
 
     token_vecs = concatenate(token_embeddings)
-    words_to_show = selectLabelToShow(relevant_word, tokenized_text)
 
-#TODO: extract context as label
-    labels = [
-        "bank vault",
-        "bank robber",
-        "river bank"
-    ]
+    words_to_show = selectLabelToShow(target, tokenized_text)
+
+    labels = getLabels(tokenized_text, target)
+
     numpy_vecs_cat = tensor2Numpy(token_vecs)
-    plotEmbeddings(numpy_vecs_cat, labels, words_to_show, 'bert')
+    plotEmbeddings(numpy_vecs_cat, labels, words_to_show, 'bert_'+target+'_'+str(plot_id))
 
+    return
+
+def getSegment(tokens):
+    return [1] * len(tokens)
+
+def main():
+    input = readInput()
+    input[MARKED] = input[SENTENCE].apply(markText)
+
+    tokenizer = getTokenizer()
+    model = getBERTModel()
+
+    input[TOKENIZED] = input[MARKED].apply(tokenizer.tokenize)
+    input[ID] = input[TOKENIZED].apply(tokenizer.convert_tokens_to_ids)
+    input[SEGMENT] = input[TOKENIZED].apply(getSegment)
+
+    input[TENSOR] = input[ID].apply(toPyTorch)
+    input[SGM_TENSOR] = input[SEGMENT].apply(toPyTorch)
+    
+    id = 0
+    for _, row in input.iterrows():
+        iteration(model, row[TENSOR], row[SGM_TENSOR], row[TOKENIZED], row[SENTENCE], row[WORD], id)
+        id = id + 1
     return
 
 main()
