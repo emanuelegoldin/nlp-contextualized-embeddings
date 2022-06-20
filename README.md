@@ -13,6 +13,8 @@ dokcer-compose build
 It will require some time since it will download all the three models.
 <br>
 
+---
+
 ## How to use it
 ```bash
 docker-compose run mycontainer
@@ -26,4 +28,18 @@ python elmo.py
 python word2vec.py
 ```
 
-After each execution a PNG file with a graph showing the embeddings of the selected word in each sentence is added into the output folder.
+After each execution a PNG file with a graph showing the embeddings of the selected word in each sentence is added into the output folder.<br>
+
+---
+## Models
+* [BERT](https://huggingface.co/transformers/v3.0.2/model_doc/bert.html)
+* [ELMo](https://tfhub.dev/google/elmo/3)
+* [Word2Vec](https://radimrehurek.com/gensim/models/word2vec.html?module-gensim.models.word2vec) 
+
+---
+
+## Literature
+We used the following article/project as base of our code.
+1. [Visualisation of embedding relations (word2vec, BERT)](https://towardsdatascience.com/visualisation-of-embedding-relations-word2vec-bert-64d695b7f36)
+2. [BERT Word Embeddings Tutorial](https://mccormickml.com/2019/05/14/BERT-word-embeddings-tutorial/)
+3. [Visualizing ELMo Contextual Vectors](https://towardsdatascience.com/visualizing-elmo-contextual-vectors-94168768fdaa)
