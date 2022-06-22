@@ -57,7 +57,6 @@ def getLabels(words, target):
     labels = []
     length = len(words)
     for index in range(length):
-        print(words[index], target)
         if words[index] == target:
             start = max(0, index - 1)
             end = min(length - 1, index + 1)
